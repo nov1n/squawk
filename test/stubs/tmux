@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# Test stub: log the args, emit canned pane stats for display-message.
+echo "tmux $*" >>"${STUB_LOG:-/dev/null}"
+if [ "${1:-}" = "display-message" ]; then
+  printf '%s\n' "${TMUX_STATS:-1 1 1}"
+fi
+exit 0

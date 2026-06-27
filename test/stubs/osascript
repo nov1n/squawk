@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# Test stub: log the args, emit a canned frontmost-app name.
+echo "osascript $*" >>"${STUB_LOG:-/dev/null}"
+printf '%s\n' "${OSA_FRONTMOST:-ghostty}"
+exit 0

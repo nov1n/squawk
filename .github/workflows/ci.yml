@@ -1,0 +1,23 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install tools
+        run: brew install bats-core jq shfmt shellcheck
+
+      - name: shellcheck
+        run: shellcheck bin/squawk lib/*.sh
+
+      - name: shfmt (diff)
+        run: shfmt -d -i 2 -ci -bn bin/squawk lib/*.sh
+
+      - name: bats
+        run: bats test/

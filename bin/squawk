@@ -1,0 +1,170 @@
+#!/usr/bin/env bash
+# squawk — notify when Claude Code needs your attention, aware of your tmux pane.
+#
+# Management:
+#   squawk install      Merge hooks into Claude Code + symlink this binary
+#   squawk uninstall    Remove squawk's hooks, symlink, and tmux snippet
+#   squawk check-deps   Check required dependencies
+#   squawk help         Show help
+#   squawk version      Print the version
+#
+# As a Claude Code hook it is invoked with a label argument and a JSON payload
+# on stdin, and decides whether to stay quiet, draw an in-pane banner, or send a
+# macOS notification:
+#   squawk 'Finished'              (Stop)
+#   squawk 'Needs your input'      (Notification — non-permission input waits)
+#   squawk 'Needs your permission' (PermissionRequest)
+#
+# https://github.com/nov1n/squawk
+set -euo pipefail
+
+SQUAWK_VERSION="0.1.0"
+
+# Resolve this script's real directory, following symlinks, to locate lib/.
+_src="${BASH_SOURCE[0]}"
+while [ -L "$_src" ]; do
+  _dir="$(cd -P "$(dirname "$_src")" && pwd)"
+  _src="$(readlink "$_src")"
+  [[ "$_src" != /* ]] && _src="$_dir/$_src"
+done
+SQUAWK_ROOT="$(cd -P "$(dirname "$_src")/.." && pwd)"
+
+usage() {
+  cat <<EOF
+squawk $SQUAWK_VERSION — Claude Code notifications for tmux + macOS
+
+Usage:
+  squawk install      Merge hooks into Claude Code + symlink this binary
+  squawk uninstall    Remove squawk's hooks, symlink, and tmux snippet
+  squawk check-deps   Check required dependencies
+  squawk hook [label] Run the hook logic (reads the event JSON on stdin)
+  squawk help         Show this help
+  squawk version      Print the version
+
+'squawk hook' is what the Claude Code hooks invoke. It reads the event payload
+on stdin and either stays quiet, draws an in-pane banner, or sends a macOS
+notification, depending on whether you can see the pane. The label defaults to
+one derived from the event; pass one to override.
+EOF
+}
+
+debug_log() {
+  [ -n "${SQUAWK_DEBUG:-}" ] || return 0
+  printf '%s %s\n' "$(date '+%H:%M:%S')" "$*" >>"$SQUAWK_DEBUG_LOG"
+}
+
+# The hook path: gather visibility facts, decide, and act.
+hook_main() {
+  [ "${SQUAWK_ENABLE:-1}" = "1" ] || exit 0
+
+  local label="${1:-}"
+  local payload pane front term frontmost in_tmux stats event
+  local pane_active window_active session_attached action
+
+  payload="$(cat || true)"
+  pane="${TMUX_PANE:-}"
+  event="$(jq -r '.hook_event_name // ""' <<<"$payload" 2>/dev/null)"
+
+  # Label: an explicit arg wins; otherwise derive it from the event payload.
+  if [ -z "$label" ]; then
+    label="$(label_from_payload "$payload")"
+  fi
+
+  term="$(resolve_terminal)"
+  front="$(get_frontmost)"
+  debug_log "label='$label' front='$front' term='$term' tmux=${TMUX:+1} pane='$pane'"
+
+  # Is squawk's terminal the frontmost app? (bundle-id comparison)
+  frontmost=0
+  if [ -n "$term" ] && [ "$front" = "$term" ]; then
+    frontmost=1
+  fi
+
+  in_tmux=0
+  if [ -n "${TMUX:-}" ] && [ -n "$pane" ]; then
+    in_tmux=1
+  fi
+
+  pane_active=0
+  window_active=0
+  session_attached=0
+  if [ "$frontmost" = "1" ] && [ "$in_tmux" = "1" ]; then
+    stats="$(get_pane_stats "$pane")"
+    read -r pane_active window_active session_attached <<<"${stats:-0 0 0}"
+  fi
+
+  action="$(decide "$frontmost" "$in_tmux" "${session_attached:-0}" "${window_active:-0}" "${pane_active:-0}")"
+  debug_log "decision=$action stats='${pane_active} ${window_active} ${session_attached}'"
+
+  case "$action" in
+    NOTHING) : ;;
+    BANNER) set_banner "$pane" "$label" ;;
+    NOTIFY)
+      local title body group
+      title="$(build_title "$payload")"
+      body="$(build_body "$payload" "$label")"
+      group="$(build_group "$payload")"
+      # Clear the notification (and cancel a blocking prompt) when you return.
+      if [ -n "$pane" ] && [ -n "$group" ]; then
+        set_clear_on_focus "$pane" "$group" "$(resolve_icon)"
+      fi
+      case "$event" in
+        PermissionRequest)
+          if approve_enabled && approve_safe "$payload"; then
+            # Command shown in full -> Approve button; decision goes to stdout.
+            notify_approve "$title" "$label" "$body" "$pane" "$term" "$group"
+          else
+            # Approve off, or truncated/multi-line: notify only. Background it so
+            # this synchronous hook returns at once and defers to the terminal.
+            notify "$title" "$label" "$body" "$pane" "$term" "$group" &
+          fi
+          ;;
+        Stop)
+          if reply_enabled; then
+            # Reply field; a typed reply continues Claude (decision to stdout).
+            notify_reply "$title" "$label" "$body" "$pane" "$term" "$group"
+          else
+            notify "$title" "$label" "$body" "$pane" "$term" "$group" &
+          fi
+          ;;
+        *)
+          # Notification (async hook) — blocking on the click is fine.
+          notify "$title" "$label" "$body" "$pane" "$term" "$group"
+          ;;
+      esac
+      ;;
+  esac
+}
+
+case "${1:-help}" in
+  hook)
+    shift
+    # shellcheck source=lib/config.sh
+    . "$SQUAWK_ROOT/lib/config.sh"
+    # shellcheck source=lib/decide.sh
+    . "$SQUAWK_ROOT/lib/decide.sh"
+    # shellcheck source=lib/payload.sh
+    . "$SQUAWK_ROOT/lib/payload.sh"
+    # shellcheck source=lib/gather.sh
+    . "$SQUAWK_ROOT/lib/gather.sh"
+    # shellcheck source=lib/act.sh
+    . "$SQUAWK_ROOT/lib/act.sh"
+    hook_main "$@"
+    ;;
+  install | uninstall | check-deps)
+    # shellcheck source=lib/install.sh
+    . "$SQUAWK_ROOT/lib/install.sh"
+    "squawk_${1//-/_}"
+    ;;
+  help | --help | -h)
+    usage
+    ;;
+  version | --version | -V)
+    echo "squawk $SQUAWK_VERSION"
+    ;;
+  *)
+    printf 'squawk: unknown command %q\n\n' "$1" >&2
+    usage >&2
+    exit 1
+    ;;
+esac

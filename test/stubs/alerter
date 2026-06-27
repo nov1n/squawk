@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# Test stub: log the args, return a canned action result.
+echo "alerter $*" >>"${STUB_LOG:-/dev/null}"
+printf '%s' "${ALERTER_RESULT:-@TIMEOUT}"
+exit 0

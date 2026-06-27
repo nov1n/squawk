@@ -1,0 +1,2 @@
+# lib files are sourced at runtime; we can't follow the dynamic source paths.
+disable=SC1090,SC1091
