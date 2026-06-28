@@ -50,11 +50,12 @@ brew install vjeantet/tap/alerter
 ## Install
 
 ```bash
-git clone https://github.com/nov1n/squawk /tmp/squawk
-/tmp/squawk/bin/squawk install
+git clone https://github.com/nov1n/squawk ~/.local/share/squawk
+~/.local/share/squawk/bin/squawk install
 ```
 
-`squawk install`:
+Keep the clone where it is — `squawk install` symlinks to it and reads its
+`lib/` at runtime (so `git pull` upgrades in place). `squawk install`:
 
 1. Checks if required dependencies are correctly installed.
 2. Symlinks `squawk` into `~/.local/bin` (override with `PREFIX=`).
