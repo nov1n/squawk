@@ -70,8 +70,8 @@ Keep the clone where it is — `squawk install` symlinks to it and reads its
 2. Symlinks `squawk` into `~/.local/bin` (override with `PREFIX=`).
 3. Merges its hooks (`Stop`, `StopFailure`, `Notification`, `PermissionRequest`)
    into `~/.claude/settings.json` — **idempotent** and **symlink-safe**.
-4. Offers to add the tmux snippet the in-pane banner needs to `~/.tmux.conf`
-   (or prints it for you to add yourself).
+4. Offers to add the tmux snippet the in-pane banner needs to `~/.tmux.conf` (or
+   prints it for you to add yourself).
 
 > **Restart Claude Code** after installing so it loads the new hooks.
 
@@ -102,8 +102,8 @@ sourced if present):
 squawk uninstall
 ```
 
-Removes the hooks (preserving siblings), the `~/.local/bin/squawk` symlink, and
-the tmux snippet.
+Removes the Claude Code hooks (preserving siblings), the `~/.local/bin/squawk`
+symlink, and the tmux snippet.
 
 ## Development
 
