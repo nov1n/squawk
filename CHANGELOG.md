@@ -16,9 +16,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Hooks for `Stop`, `Notification` (non-permission waits), and `PermissionRequest`.
   All three call the same `squawk` command; the label is derived from the
   payload's `hook_event_name` (overridable via `SQUAWK_LABEL_*`).
-- Zero-config terminal detection via the terminal's bundle id
-  (`$__CFBundleIdentifier`, which survives tmux), used for both the frontmost
-  check and the click-to-jump `activate`. Override with `SQUAWK_TERMINAL`.
+- Zero-config, terminal-agnostic terminal detection: walks the process tree to
+  the GUI app that owns the terminal (starting from the attached tmux client) and
+  reads its bundle id — used for both the frontmost check and the click-to-jump
+  `activate`. No built-in terminal list and no configuration, and it tracks the
+  terminal you're currently attached from.
 - Notification icon: borrows the Claude for Desktop icon when installed; override
   with `SQUAWK_ICON=<bundle id>` or disable with `SQUAWK_ICON=none`.
 - Notifications from the same Claude session share a `--group` (`squawk-<session_id>`),

@@ -1,36 +1,12 @@
 #!/usr/bin/env bats
-# Terminal resolution: bundle id from override / $__CFBundleIdentifier / tmux.
+# Config toggles: approve / reply enablement. (Terminal resolution lives in
+# detect.bats.)
 
 setup() {
   export XDG_CONFIG_HOME="$BATS_TEST_TMPDIR/config"
-  # Stub tmux so the show-environment fallback yields nothing.
-  export PATH="${BATS_TEST_DIRNAME}/stubs:$PATH"
-  unset SQUAWK_TERMINAL __CFBundleIdentifier SQUAWK_APPROVE SQUAWK_REPLY
+  unset SQUAWK_APPROVE SQUAWK_REPLY
   # shellcheck source=../lib/config.sh
   source "${BATS_TEST_DIRNAME}/../lib/config.sh"
-}
-
-@test "SQUAWK_TERMINAL override is used verbatim" {
-  export SQUAWK_TERMINAL=com.example.term
-  run resolve_terminal
-  [ "$output" = "com.example.term" ]
-}
-
-@test "auto-detect from \$__CFBundleIdentifier" {
-  export __CFBundleIdentifier=com.mitchellh.ghostty
-  run resolve_terminal
-  [ "$output" = "com.mitchellh.ghostty" ]
-}
-
-@test "SQUAWK_TERMINAL wins over \$__CFBundleIdentifier" {
-  export SQUAWK_TERMINAL=com.a __CFBundleIdentifier=com.b
-  run resolve_terminal
-  [ "$output" = "com.a" ]
-}
-
-@test "no terminal info -> empty (callers then always notify)" {
-  run resolve_terminal
-  [ -z "$output" ]
 }
 
 @test "approve_enabled: on by default" {

@@ -12,7 +12,7 @@ fi
 # when you return to its pane, so notifications don't need to time out.
 : "${SQUAWK_TIMEOUT:=0}"
 : "${SQUAWK_DEBUG_LOG:=${TMPDIR:-/tmp}/squawk-debug.log}"
-# Optional, may be unset: SQUAWK_DEBUG, SQUAWK_ICON, SQUAWK_TERMINAL, SQUAWK_APPROVE.
+# Optional, may be unset: SQUAWK_DEBUG, SQUAWK_ICON, SQUAWK_APPROVE.
 
 # The Claude desktop app, whose icon notifications borrow by default.
 SQUAWK_CLAUDE_BUNDLE_ID="com.anthropic.claudefordesktop"
@@ -37,24 +37,39 @@ reply_enabled() {
   esac
 }
 
-# resolve_terminal -> the bundle id of the terminal squawk's pane lives in.
-# Everything keys off the bundle id: it's what macOS sets in $__CFBundleIdentifier
-# (inherited by child processes and surviving tmux), what the frontmost-app query
-# returns, and what `tell application id "<bundle>"` activates. So by default no
-# configuration is needed — squawk auto-detects the terminal you launched from.
-# Precedence: SQUAWK_TERMINAL override > $__CFBundleIdentifier > tmux's copy of it.
+# resolve_terminal -> bundle id of the GUI app hosting this terminal, discovered
+# by walking the process tree to the first ancestor whose executable lives in a
+# .app bundle and reading its CFBundleIdentifier. It drives the frontmost-app
+# comparison and the click-to-jump `activate`. Terminal-agnostic — any terminal
+# works, with no built-in list and no configuration. Inside tmux the pane's
+# processes hang off the detached server, so we start the walk from the attached
+# client (which lives under the real terminal); otherwise from this process.
+# Empty if nothing is found (callers then treat the terminal as not-frontmost
+# and notify).
 resolve_terminal() {
-  if [ -n "${SQUAWK_TERMINAL:-}" ]; then
-    printf '%s' "$SQUAWK_TERMINAL"
-    return
+  local pid ppid comm app i
+  if [ -n "${TMUX:-}" ]; then
+    if [ -n "${TMUX_PANE:-}" ]; then
+      pid="$(tmux display-message -p -t "$TMUX_PANE" '#{client_pid}' 2>/dev/null)"
+    else
+      pid="$(tmux display-message -p '#{client_pid}' 2>/dev/null)"
+    fi
   fi
-  if [ -n "${__CFBundleIdentifier:-}" ]; then
-    printf '%s' "$__CFBundleIdentifier"
-    return
-  fi
-  # Fallback: the value tmux captured from the launching terminal at server start.
-  tmux show-environment -g __CFBundleIdentifier 2>/dev/null \
-    | sed -n 's/^__CFBundleIdentifier=//p'
+  [ -n "${pid:-}" ] || pid="$$"
+  for ((i = 0; i < 20; i++)); do
+    case "$pid" in '' | *[!0-9]*) return 0 ;; esac
+    [ "$pid" -gt 1 ] || return 0
+    read -r ppid comm < <(ps -o ppid=,comm= -p "$pid" 2>/dev/null) || true
+    case "$comm" in
+      */*.app/Contents/MacOS/*)
+        app="${comm%%.app/*}.app"
+        if defaults read "$app/Contents/Info" CFBundleIdentifier 2>/dev/null; then
+          return 0
+        fi
+        ;;
+    esac
+    pid="$ppid"
+  done
 }
 
 # claude_installed -> 0 if the Claude desktop app is present in a standard

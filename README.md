@@ -87,7 +87,6 @@ sourced if present):
 
 | Variable                    | Default                    | Purpose                                                                                                                                                                                                                        |
 | --------------------------- | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `SQUAWK_TERMINAL`           | _(auto-detect)_            | Bundle id of your terminal. Auto-detected from `$__CFBundleIdentifier`; only set it if detection fails (e.g. `com.mitchellh.ghostty`).                                                                                         |
 | `SQUAWK_ICON`               | _(auto)_                   | Bundle id whose **icon** the notification uses (`alerter --sender`). Defaults to the **Claude icon** when Claude for Desktop is installed in a standard path. Set a bundle id to use another app's icon, or `none` to disable. |
 | `SQUAWK_TIMEOUT`            | `0`                        | Seconds before a notification auto-dismisses. `0` keeps it **persistent** (squawk clears it when you return to the pane). Set a number to auto-dismiss instead.                                                                |
 | `SQUAWK_LABEL_STOP`         | `Finished`                 | Subtitle for `Stop` events.                                                                                                                                                                                                    |
@@ -196,23 +195,12 @@ fully handled.
 <details id="faq-terminal-detection">
 <summary>How does squawk detect my terminal?</summary>
 
-From the terminal's **bundle id**, which macOS exports as
-`$__CFBundleIdentifier` (inherited by child processes and surviving tmux) — so
-it works with no configuration. Only set `SQUAWK_TERMINAL` if auto-detection
-fails (e.g. Claude was launched outside a terminal). Common bundle ids:
-
-| Terminal     | Bundle id                |
-| ------------ | ------------------------ |
-| Ghostty      | `com.mitchellh.ghostty`  |
-| iTerm2       | `com.googlecode.iterm2`  |
-| Terminal.app | `com.apple.Terminal`     |
-| kitty        | `net.kovidgoyal.kitty`   |
-| WezTerm      | `com.github.wez.wezterm` |
-| Alacritty    | `org.alacritty`          |
-
-> If you attach to a tmux session from a different terminal than the one that
-> started the tmux server, detection reflects the original — set
-> `SQUAWK_TERMINAL` to override.
+squawk walks up the process tree to the GUI app that owns your terminal and
+reads its **bundle id**. It's terminal-agnostic — any terminal works with no
+configuration and no built-in list. Inside tmux it starts from the _attached
+client_ (the pane's processes hang off tmux's detached server), so it correctly
+identifies the terminal you're currently attached from, even if the tmux server
+was first started elsewhere.
 
 </details>
 

@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# Test stub: `defaults read <app>/Contents/Info CFBundleIdentifier` -> $DEFAULTS_BID.
+echo "defaults $*" >>"${STUB_LOG:-/dev/null}"
+if [ "${1:-}" = "read" ] && [ "${3:-}" = "CFBundleIdentifier" ] && [ -n "${DEFAULTS_BID:-}" ]; then
+  printf '%s\n' "$DEFAULTS_BID"
+  exit 0
+fi
+exit 1

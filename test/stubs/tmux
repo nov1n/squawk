@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
-# Test stub: log the args, emit canned pane stats for display-message.
+# Test stub: log the args, emit canned client_pid / pane stats for display-message.
 echo "tmux $*" >>"${STUB_LOG:-/dev/null}"
 if [ "${1:-}" = "display-message" ]; then
-  printf '%s\n' "${TMUX_STATS:-1 1 1}"
+  case "$*" in
+  *client_pid*) printf '%s\n' "${TMUX_CLIENT_PID:-0}" ;;
+  *) printf '%s\n' "${TMUX_STATS:-1 1 1}" ;;
+  esac
 fi
 exit 0

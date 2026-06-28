@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# Test stub: echo a canned "<ppid> <comm>" for `ps -o ppid=,comm= -p <pid>`,
+# driven by env vars PS_<pid>. Unknown pid -> empty.
+echo "ps $*" >>"${STUB_LOG:-/dev/null}"
+pid=""
+while [ $# -gt 0 ]; do
+  if [ "$1" = "-p" ]; then pid="$2"; break; fi
+  shift
+done
+var="PS_${pid}"
+printf '%s\n' "${!var:-}"
+exit 0
