@@ -61,18 +61,15 @@ _notify_args() {
   fi
 }
 
-# Label of the action button that jumps back to the pane (overrides alerter's
-# useless default "Show", which only activates the sender app).
-SQUAWK_JUMP_LABEL="${SQUAWK_JUMP_LABEL:-Jump}"
-
 # notify <title> <subtitle> <body> <pane> <terminal_bundle_id> <group>
-# Plain notification (Stop / Notification). Its one button — and a click on the
-# body — jumps back to the pane. Notifications sharing <group> replace one another.
+# Plain notification (Stop / Notification). Its one button — labeled "Jump",
+# overriding alerter's useless default "Show" — and a click on the body jump back
+# to the pane. Notifications sharing <group> replace one another.
 notify() {
   local pane="$4" app="$5" result kind
   local -a args
   _notify_args "$1" "$2" "$3" "$6"
-  args+=(--actions "$SQUAWK_JUMP_LABEL")
+  args+=(--actions "Jump")
   result="$(alerter "${args[@]}")"
   kind="$(jq -r '.activationType // ""' <<<"$result" 2>/dev/null)"
   # The only action is "jump", so any action/body click navigates.
@@ -110,7 +107,7 @@ notify_reply() {
   local pane="$4" app="$5" result kind value
   local -a args
   _notify_args "$1" "$2" "$3" "$6"
-  args+=(--reply "${SQUAWK_REPLY_PLACEHOLDER:-Reply to continue…}")
+  args+=(--reply "Reply to continue…")
   result="$(alerter "${args[@]}")"
   kind="$(jq -r '.activationType // ""' <<<"$result" 2>/dev/null)"
   value="$(jq -r '.activationValue // ""' <<<"$result" 2>/dev/null)"

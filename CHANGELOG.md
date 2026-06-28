@@ -15,7 +15,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   an in-pane attention banner, or a macOS notification with click-to-jump.
 - Hooks for `Stop`, `Notification` (non-permission waits), and `PermissionRequest`.
   All three call the same `squawk` command; the label is derived from the
-  payload's `hook_event_name` (overridable via `SQUAWK_LABEL_*`).
+  payload's `hook_event_name`.
 - Zero-config, terminal-agnostic terminal detection: walks the process tree to
   the GUI app that owns the terminal (starting from the attached tmux client) and
   reads its bundle id — used for both the frontmost check and the click-to-jump
@@ -50,8 +50,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `block` decision with your text). Synchronous like Approve, so it blocks a
   finished turn while you're away; disable with `SQUAWK_REPLY=0`.
 - Plain notifications (Notification / reply- or approve-disabled) use a single
-  configurable jump action (`SQUAWK_JUMP_LABEL`, default `Jump`) instead of
-  alerter's default "Show"; a body click also jumps. All results parsed via JSON.
+  "Jump" action instead of alerter's default "Show"; a body click also jumps. All
+  results parsed via JSON.
 - `squawk install` / `uninstall` / `check-deps` subcommands, with a symlink-safe,
   idempotent settings.json merge.
 - bats test suite, shellcheck + shfmt, GitHub Actions CI.

@@ -3,15 +3,15 @@
 # Uses real jq (a hard dependency) — never stubbed in tests.
 
 # label_from_payload <payload_json> -> a short label for the event, from
-# .hook_event_name. Overridable via SQUAWK_LABEL_* env vars.
+# .hook_event_name.
 label_from_payload() {
   local event
   event="$(jq -r '.hook_event_name // ""' <<<"$1" 2>/dev/null)"
   case "$event" in
-    Stop) printf '%s' "${SQUAWK_LABEL_STOP:-Finished}" ;;
-    PermissionRequest) printf '%s' "${SQUAWK_LABEL_PERMISSION:-Needs your permission}" ;;
-    Notification) printf '%s' "${SQUAWK_LABEL_NOTIFICATION:-Needs your input}" ;;
-    *) printf '%s' "${SQUAWK_LABEL_DEFAULT:-Claude}" ;;
+    Stop) printf '%s' "Finished" ;;
+    PermissionRequest) printf '%s' "Needs your permission" ;;
+    Notification) printf '%s' "Needs your input" ;;
+    *) printf '%s' "Claude" ;;
   esac
 }
 

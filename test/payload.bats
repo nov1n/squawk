@@ -27,11 +27,6 @@ setup() {
   [ "$output" = "Claude" ]
 }
 
-@test "label: overridable via SQUAWK_LABEL_STOP" {
-  SQUAWK_LABEL_STOP="Done!" run label_from_payload '{"hook_event_name":"Stop"}'
-  [ "$output" = "Done!" ]
-}
-
 @test "title is the last path segment of cwd" {
   run build_title '{"cwd":"/Users/x/projects/myapp"}'
   [ "$output" = "myapp" ]
