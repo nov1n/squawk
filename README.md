@@ -10,11 +10,11 @@ can't — then lets you reply, approve, or jump to the pane.
 
 ## Features
 
-- **Smart notifications** — silent when a pane is focused, an in-pane **banner**
-  when it's visible but not focused, and a **macOS notification** only when it's
+- **Smart notifications** — silent when a pane is focused, an in-pane banner
+  when it's visible but not focused, and a macOS notification only when it's
   off-screen.
-- **Reply from the notification** — answer a "Finished" notification and Claude
-  **continues the conversation**; no trip back to the terminal.
+- **Reply from the notification** — Reply from the notification and Claude
+  continues the conversation; no trip back to the terminal.
 - **Approve from the notification** — one-click _allow_ a permission prompt.
 - **Message preview** — Notifications show Claude's last message when relevant.
 - **Persistent + self-clearing** — notifications stay until you deal with them,
@@ -63,8 +63,8 @@ git clone https://github.com/nov1n/squawk ~/.local/share/squawk
 ~/.local/share/squawk/bin/squawk install
 ```
 
-Keep the clone where it is — `squawk install` symlinks to it and reads its
-`lib/` at runtime (so `git pull` upgrades in place). `squawk install`:
+Keep the clone where it is — `squawk install` symlinks to it and reads it at
+runtime (so `git pull` upgrades in place). `squawk install`:
 
 1. Checks if required dependencies are correctly installed.
 2. Symlinks `squawk` into `~/.local/bin` (override with `PREFIX=`).
