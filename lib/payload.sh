@@ -9,6 +9,7 @@ label_from_payload() {
   event="$(jq -r '.hook_event_name // ""' <<<"$1" 2>/dev/null)"
   case "$event" in
     Stop) printf '%s' "Finished" ;;
+    StopFailure) printf '%s' "Turn failed" ;;
     PermissionRequest) printf '%s' "Needs your permission" ;;
     Notification) printf '%s' "Needs your input" ;;
     *) printf '%s' "Claude" ;;

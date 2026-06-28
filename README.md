@@ -70,8 +70,8 @@ Keep the clone where it is — `squawk install` symlinks to it and reads its
 
 1. Checks if required dependencies are correctly installed.
 2. Symlinks `squawk` into `~/.local/bin` (override with `PREFIX=`).
-3. Merges three hooks (`Stop`, `Notification`, `PermissionRequest`) into
-   `~/.claude/settings.json` — **idempotent** and **symlink-safe**.
+3. Merges its hooks (`Stop`, `StopFailure`, `Notification`, `PermissionRequest`)
+   into `~/.claude/settings.json` — **idempotent** and **symlink-safe**.
 4. Offers to append the tmux prerequisite snippet to `~/.tmux.conf`.
 
 > **Restart Claude Code** after installing so it loads the new hooks.

@@ -13,9 +13,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Initial release: a Claude Code notification hook for tmux + macOS.
 - Three reactions based on whether you can see the originating pane: do nothing,
   an in-pane attention banner, or a macOS notification with click-to-jump.
-- Hooks for `Stop`, `Notification` (non-permission waits), and `PermissionRequest`.
-  All three call the same `squawk` command; the label is derived from the
-  payload's `hook_event_name`.
+- Hooks for `Stop`, `StopFailure` (a turn that died on an API error),
+  `Notification` (non-permission waits), and `PermissionRequest`. All call the
+  same `squawk` command; the label is derived from the payload's
+  `hook_event_name`.
 - Zero-config, terminal-agnostic terminal detection: walks the process tree to
   the GUI app that owns the terminal (starting from the attached tmux client) and
   reads its bundle id — used for both the frontmost check and the click-to-jump

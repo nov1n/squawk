@@ -12,6 +12,11 @@ setup() {
   [ "$output" = "Finished" ]
 }
 
+@test "label: StopFailure -> Turn failed" {
+  run label_from_payload '{"hook_event_name":"StopFailure"}'
+  [ "$output" = "Turn failed" ]
+}
+
 @test "label: PermissionRequest -> Needs your permission" {
   run label_from_payload '{"hook_event_name":"PermissionRequest"}'
   [ "$output" = "Needs your permission" ]

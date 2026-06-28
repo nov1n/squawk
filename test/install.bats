@@ -42,6 +42,12 @@ JSON
   run jq -r '.hooks.Notification[0].matcher' "$CLAUDE_SETTINGS"
   [ "$output" = "idle_prompt|elicitation_dialog" ]
 
+  # StopFailure alerts on a turn that died on an API error; async, matches all.
+  run jq -r '.hooks.StopFailure[0].matcher' "$CLAUDE_SETTINGS"
+  [ "$output" = "*" ]
+  run jq -r '.hooks.StopFailure[0].hooks[0].async' "$CLAUDE_SETTINGS"
+  [ "$output" = "true" ]
+
   # Unrelated key preserved.
   run jq -r '.model' "$CLAUDE_SETTINGS"
   [ "$output" = "opus" ]
@@ -90,6 +96,8 @@ JSON
 
   # Empty event arrays pruned.
   run jq '.hooks.PermissionRequest // "gone"' "$CLAUDE_SETTINGS"
+  [ "$output" = '"gone"' ]
+  run jq '.hooks.StopFailure // "gone"' "$CLAUDE_SETTINGS"
   [ "$output" = '"gone"' ]
 
   # tmux snippet stripped.

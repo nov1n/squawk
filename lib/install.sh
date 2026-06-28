@@ -99,6 +99,13 @@ merge_hooks() {
       {matcher: "*",
        hooks: [{type: "command", command: ($bin + " hook")}]}
     ])
+    # StopFailure: the turn died on an API error (rate limit, server error, …).
+    # Async — its output is ignored and there is nothing to answer; we just alert
+    # you so a failed turn does not sit unnoticed while you are away.
+    | .hooks.StopFailure = (strip(.hooks.StopFailure) + [
+      {matcher: "*",
+       hooks: [{type: "command", command: ($bin + " hook"), async: true}]}
+    ])
   ' "$target" >"$tmp"
   mv "$tmp" "$target"
   info "merged squawk hooks -> $SETTINGS"
@@ -124,6 +131,7 @@ unmerge_hooks() {
       .hooks.Stop = clean(.hooks.Stop)
       | .hooks.Notification = clean(.hooks.Notification)
       | .hooks.PermissionRequest = clean(.hooks.PermissionRequest)
+      | .hooks.StopFailure = clean(.hooks.StopFailure)
       | .hooks |= with_entries(select(.value | length > 0))
       | (if (.hooks | length) == 0 then del(.hooks) else . end)
     else . end
