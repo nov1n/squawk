@@ -38,6 +38,9 @@ JSON
   [ "$output" = "unset" ]
   run jq -r '.hooks.Notification[0].hooks[0].async' "$CLAUDE_SETTINGS"
   [ "$output" = "true" ]
+  # Notification matches only the input-requiring subtypes (not informational ones).
+  run jq -r '.hooks.Notification[0].matcher' "$CLAUDE_SETTINGS"
+  [ "$output" = "idle_prompt|elicitation_dialog" ]
 
   # Unrelated key preserved.
   run jq -r '.model' "$CLAUDE_SETTINGS"

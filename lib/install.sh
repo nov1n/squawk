@@ -86,8 +86,11 @@ merge_hooks() {
     .hooks.Stop = (strip(.hooks.Stop) + [
       {hooks: [{type: "command", command: ($bin + " hook")}]}
     ])
+    # Only the Notification subtypes where Claude is actually waiting on you, so
+    # the "Needs your input" label fits and we skip informational ones
+    # (auth_success, elicitation_complete/response).
     | .hooks.Notification = (strip(.hooks.Notification) + [
-      {matcher: "idle_prompt|auth_success|elicitation_dialog|elicitation_complete|elicitation_response",
+      {matcher: "idle_prompt|elicitation_dialog",
        hooks: [{type: "command", command: ($bin + " hook"), async: true}]}
     ])
     # PermissionRequest is synchronous (no async) so squawk can answer the
