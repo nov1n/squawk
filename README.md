@@ -4,27 +4,25 @@
 
 # squawk
 
-`squawk` transforms Claude's events—like a finished turn, an input prompt, or a
-permission request into context-aware notifications. Instead of constantly
-pinging you, it detects if Claude is visible and chooses the least intrusive
-alert possible. When you do get a notification, you can jump straight to the
-active pane with a single click, or reply and approve directly from the alert
-without breaking your workflow.
+`squawk` is a tmux-aware notification layer for Claude Code on macOS: it works
+out whether you can see the pane Claude is in, and only interrupts when you
+can't — then lets you reply, approve, or jump.
 
 ## Features
 
-- **Pane-aware** — silent when you're looking at the pane, a **banner** on an
-  adjacent split, a **macOS notification** only when you're truly away.
+- **Smart notifications** — silent when a pane is focused, an in-pane **banner**
+  when it's visible but not focused, and a **macOS notification** only when it's
+  off-screen.
 - **Reply from the notification** — answer a "Finished" notification and Claude
   **continues the conversation**; no trip back to the terminal.
 - **Approve from the notification** — one-click _allow_ a permission prompt.
-- **Message preview** — "Finished" notifications show Claude's actual last
-  message, not just the word "Finished".
+- **Message preview** — Notifications show Claude's last message when relevant.
 - **Persistent + self-clearing** — notifications stay until you deal with them,
   and clear automatically the moment you return to the pane.
 - **Per-session grouping** — a session's notifications replace each other
   instead of stacking up.
-- **Zero-config** — auto-detects your terminal; nothing to set beyond install.
+- **Zero-config** — works out of the box; configurable via env vars if you want
+  (see [Configuration](#configuration)).
 
 ## Demo
 
@@ -34,6 +32,19 @@ without breaking your workflow.
 https://github.com/user-attachments/assets/a06acd74-dd22-4a0c-9f35-bc0d9dba9de6
 
 </details>
+
+## Events
+
+squawk hooks four Claude Code events. Each runs through the same visibility
+decision — stay quiet when you're looking at the pane, an in-pane banner when
+it's visible but not focused, a notification when it's off-screen:
+
+| Event               | Fires when                                                  | Notification                                      |
+| ------------------- | ----------------------------------------------------------- | ------------------------------------------------- |
+| `Stop`              | Claude finishes its turn                                    | **Finished**; reply to keep it going              |
+| `StopFailure`       | The turn dies on an API error (rate limit, server error, …) | **Turn failed**                                   |
+| `Notification`      | Claude is waiting on you or an MCP server asks for input    | **Needs your input**                              |
+| `PermissionRequest` | Claude needs permission to run a tool                       | **Needs your permission**; Approve from the alert |
 
 ## Requirements
 
@@ -77,9 +88,8 @@ set -g pane-border-format ''
 ```
 
 `squawk install` can add this for you. If you prefer to do this manually, make
-sure to place it last in your tmux config — some themes (e.g.
-`tokyo-night-tmux`) turn `pane-border-status` off, so squawk has to load after
-them to win.
+sure to place it last in your tmux config — some themes turn
+`pane-border-status` off, so squawk has to load after them to win.
 
 ## Configuration
 
@@ -89,12 +99,12 @@ sourced if present):
 | Variable           | Default                    | Purpose                                                                                                                                                                                                                        |
 | ------------------ | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `SQUAWK_ICON`      | _(auto)_                   | Bundle id whose **icon** the notification uses (`alerter --sender`). Defaults to the **Claude icon** when Claude for Desktop is installed in a standard path. Set a bundle id to use another app's icon, or `none` to disable. |
-| `SQUAWK_TIMEOUT`   | `0`                        | Seconds before a notification auto-dismisses. `0` keeps it **persistent** (squawk clears it when you return to the pane). Set a number to auto-dismiss instead.                                                                |
 | `SQUAWK_BANNER`    | _(yellow ⬤ style)_         | Full tmux `pane-border-format` for the in-pane banner; `{label}` is replaced with the event. Restyle colors, symbols, padding/width, and alignment — e.g. `#[align=left,bg=magenta,fg=white,bold] ▶ {label} `.                 |
+| `SQUAWK_TIMEOUT`   | `0`                        | Seconds before a notification auto-dismisses. `0` keeps it **persistent** (squawk clears it when you return to the pane). Set a number to auto-dismiss instead.                                                                |
 | `SQUAWK_APPROVE`   | `1`                        | Show the Approve button on permission notifications. Set to `0` for notify-only (decide in the terminal).                                                                                                                      |
 | `SQUAWK_REPLY`     | `1`                        | Show a reply field on "Finished" notifications (your reply continues the conversation). Set to `0` for notify-only.                                                                                                            |
 | `SQUAWK_ENABLE`    | `1`                        | Set to `0` to disable squawk entirely.                                                                                                                                                                                         |
-| `SQUAWK_DEBUG`     | _(unset)_                  | Set to log decisions to `SQUAWK_DEBUG_LOG`.                                                                                                                                                                                    |
+| `SQUAWK_DEBUG`     | _(unset)_                  | Set to `1` to log decisions to `SQUAWK_DEBUG_LOG`.                                                                                                                                                                             |
 | `SQUAWK_DEBUG_LOG` | `$TMPDIR/squawk-debug.log` | Debug log path.                                                                                                                                                                                                                |
 
 > **Notification icon.** With Claude for Desktop installed, notifications carry
@@ -134,28 +144,6 @@ icon.
 
 </details>
 
-<details id="faq-reply">
-<summary>Can I reply to Claude from the notification?</summary>
-
-When Claude finishes and you're away from the pane, the notification has a
-**reply field** — type a response and Claude continues with it, no trip back to
-the terminal. Dismiss it (or return to the pane, which clears it) and Claude
-just stops; click the body to jump to the pane instead. Disable with
-`SQUAWK_REPLY=0`.
-
-</details>
-
-<details id="faq-approve">
-<summary>Can I approve a permission request from the notification?</summary>
-
-An away permission prompt shows an **Approve** button. Approve runs the tool;
-clicking the body jumps to the pane; dismissing (or returning to the pane) falls
-back to the normal terminal prompt. Only an explicit Approve ever runs the tool
-— timeouts, dismissals, and anything ambiguous defer to the terminal. Disable
-with `SQUAWK_APPROVE=0`.
-
-</details>
-
 <details id="faq-approve-button">
 <summary>Why doesn't the Approve button show up?</summary>
 
@@ -166,37 +154,14 @@ command there.
 
 </details>
 
-<details id="faq-blocking">
-<summary>Why does Claude wait instead of stopping when I'm away?</summary>
-
-Reply and approve answer on your behalf, so the hook stays open while you're
-away: a finished turn waits for your reply, and a permission prompt waits for
-your decision. Dismiss the notification (or return to the pane) to proceed
-immediately, or set `SQUAWK_TIMEOUT` to a number of seconds to cap the wait.
-This needs a synchronous hook, so it doesn't apply in headless (`claude -p`)
-mode.
-
-</details>
-
 <details id="faq-multiple-clients">
 <summary>Does squawk support multiple tmux clients?</summary>
 
-Not fully. If two terminal windows are attached to the same tmux session, squawk
-can't tell which one you're looking at, so it may stay quiet when it should
-notify. A single window — with any splits, windows, and detached sessions — is
+Not fully. When two clients are attached to one session, tmux reports its
+pane/window state per-_session_, not per-client, so squawk can't tell which
+terminal you're actually looking at and may stay quiet when it should notify. A
+single attached client — with any splits, windows, and detached sessions — is
 fully handled.
-
-</details>
-
-<details id="faq-terminal-detection">
-<summary>How does squawk detect my terminal?</summary>
-
-squawk walks up the process tree to the GUI app that owns your terminal and
-reads its **bundle id**. It's terminal-agnostic — any terminal works with no
-configuration and no built-in list. Inside tmux it starts from the _attached
-client_ (the pane's processes hang off tmux's detached server), so it correctly
-identifies the terminal you're currently attached from, even if the tmux server
-was first started elsewhere.
 
 </details>
 
