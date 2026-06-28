@@ -25,8 +25,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   with `SQUAWK_ICON=<bundle id>` or disable with `SQUAWK_ICON=none`.
 - Notifications from the same Claude session share a `--group` (`squawk-<session_id>`),
   so a newer one replaces the previous instead of stacking up.
-- The in-pane banner's colors are configurable via `SQUAWK_BANNER_BG` /
-  `SQUAWK_BANNER_FG` (any tmux color); defaults stay yellow on black.
+- The in-pane banner is fully restyleable via a single `SQUAWK_BANNER` tmux
+  `pane-border-format` template (`{label}` placeholder) — colors, symbols,
+  padding/width, alignment; defaults to yellow-on-black with ⬤ markers.
 - Returning to the pane clears that session's notification via a one-shot tmux
   `pane-focus-in` hook (`alerter --remove`), which also cancels a still-open
   Approve/Reply prompt so you decide in the terminal.

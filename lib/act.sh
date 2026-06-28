@@ -5,13 +5,17 @@
 # Paint an attention banner on the pane's border. A one-shot pane-focus-in hook
 # reverts it (back to the global blank border format) the moment you focus the
 # pane, then removes itself. Requires `focus-events on` and a non-empty
-# `pane-border-status` in tmux (see share/tmux/squawk.tmux). Colors are any tmux
-# color (name, colourN, or #hex) via SQUAWK_BANNER_BG / SQUAWK_BANNER_FG.
+# `pane-border-status` in tmux (see share/tmux/squawk.tmux).
+#
+# The banner is a tmux `pane-border-format` string; `{label}` is replaced with
+# the event label. Override the whole thing with SQUAWK_BANNER to restyle colors,
+# symbols, padding/width, and alignment using tmux format/style syntax.
 set_banner() {
-  local pane="$1" label="$2"
-  local bg="${SQUAWK_BANNER_BG:-yellow}" fg="${SQUAWK_BANNER_FG:-black}"
-  tmux set-option -p -t "$pane" pane-border-format \
-    "#[align=centre,fg=${fg},bg=${bg},bold] ⬤  ${label}  ⬤ "
+  local pane="$1" label="$2" fmt default
+  default='#[align=centre,fg=black,bg=yellow,bold] ⬤  {label}  ⬤ '
+  fmt="${SQUAWK_BANNER:-$default}"
+  fmt="${fmt//\{label\}/$label}"
+  tmux set-option -p -t "$pane" pane-border-format "$fmt"
   tmux set-hook -p -t "$pane" pane-focus-in \
     'set-option -pu pane-border-format ; set-hook -pu pane-focus-in'
 }

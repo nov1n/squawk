@@ -7,7 +7,7 @@ setup() {
   export PATH="${BATS_TEST_DIRNAME}/stubs:$PATH"
   export SQUAWK_TIMEOUT=10
   export XDG_CONFIG_HOME="$BATS_TEST_TMPDIR/config"
-  unset SQUAWK_ICON
+  unset SQUAWK_ICON SQUAWK_BANNER
   # shellcheck source=../lib/config.sh
   source "${BATS_TEST_DIRNAME}/../lib/config.sh"
   # shellcheck source=../lib/decide.sh
@@ -24,16 +24,17 @@ setup() {
   grep -q 'set-hook -p -t %3 pane-focus-in' "$STUB_LOG"
 }
 
-@test "set_banner defaults to a yellow background" {
+@test "set_banner default format styles the label and substitutes {label}" {
   set_banner '%3' 'Finished'
   grep -q 'bg=yellow' "$STUB_LOG"
-  grep -q 'fg=black' "$STUB_LOG"
+  grep -qF 'Finished' "$STUB_LOG"
+  # the placeholder is substituted, never left literal
+  ! grep -qF '{label}' "$STUB_LOG"
 }
 
-@test "set_banner honors SQUAWK_BANNER_BG and SQUAWK_BANNER_FG" {
-  SQUAWK_BANNER_BG='#ff0066' SQUAWK_BANNER_FG=white set_banner '%3' 'Finished'
-  grep -qF 'bg=#ff0066' "$STUB_LOG"
-  grep -qF 'fg=white' "$STUB_LOG"
+@test "set_banner honors a custom SQUAWK_BANNER template" {
+  SQUAWK_BANNER='#[bg=blue]>> {label} <<' set_banner '%3' 'Done'
+  grep -qF '#[bg=blue]>> Done <<' "$STUB_LOG"
 }
 
 @test "set_clear_on_focus arms a pane-focus-in hook that removes the group" {
