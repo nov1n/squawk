@@ -63,6 +63,10 @@ _notify_args() {
   if [ -n "$icon" ]; then
     args+=(--sender "$icon")
   fi
+  # Opt-in sound: a macOS system sound name ("default", "Ping", "Glass", …).
+  if [ -n "${SQUAWK_SOUND:-}" ]; then
+    args+=(--sound "$SQUAWK_SOUND")
+  fi
 }
 
 # notify <title> <subtitle> <body> <pane> <terminal_bundle_id> <group>

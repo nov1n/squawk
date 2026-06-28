@@ -7,7 +7,7 @@ setup() {
   export PATH="${BATS_TEST_DIRNAME}/stubs:$PATH"
   export SQUAWK_TIMEOUT=10
   export XDG_CONFIG_HOME="$BATS_TEST_TMPDIR/config"
-  unset SQUAWK_ICON SQUAWK_BANNER
+  unset SQUAWK_ICON SQUAWK_BANNER SQUAWK_SOUND
   # shellcheck source=../lib/config.sh
   source "${BATS_TEST_DIRNAME}/../lib/config.sh"
   # shellcheck source=../lib/decide.sh
@@ -59,6 +59,17 @@ setup() {
   export SQUAWK_ICON=com.example.x
   ALERTER_RESULT='{"activationType":"timeout"}' notify 'proj' 'lbl' 'body' '%3' 'com.mitchellh.ghostty' ''
   grep -q -- '--sender com.example.x' "$STUB_LOG"
+}
+
+@test "notify is silent by default (no --sound)" {
+  ALERTER_RESULT='{"activationType":"timeout"}' notify 'p' 'l' 'b' '%3' 'com.mitchellh.ghostty' ''
+  ! grep -q -- '--sound' "$STUB_LOG"
+}
+
+@test "notify with SQUAWK_SOUND includes --sound" {
+  export SQUAWK_SOUND=Glass
+  ALERTER_RESULT='{"activationType":"timeout"}' notify 'p' 'l' 'b' '%3' 'com.mitchellh.ghostty' ''
+  grep -q -- '--sound Glass' "$STUB_LOG"
 }
 
 @test "timeout result does not jump back" {

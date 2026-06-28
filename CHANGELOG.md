@@ -32,6 +32,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Returning to the pane clears that session's notification via a one-shot tmux
   `pane-focus-in` hook (`alerter --remove`), which also cancels a still-open
   Approve/Reply prompt so you decide in the terminal.
+- Optional notification sound via `SQUAWK_SOUND` (`default` or a macOS system
+  sound name like `Ping`/`Glass`); silent by default.
 - "Finished" (Stop) notifications show Claude's last message in the body (from the
   hook's inline `last_assistant_message`) instead of repeating the "Finished" label.
 - Notifications are persistent by default (`SQUAWK_TIMEOUT=0`) — there's no need
