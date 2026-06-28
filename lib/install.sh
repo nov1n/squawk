@@ -152,6 +152,15 @@ install_tmux_snippet() {
   info "appended tmux snippet -> $TMUX_CONF (reload: tmux source-file $TMUX_CONF)"
 }
 
+# Print the tmux snippet to stdout for the user to add manually (the banner needs
+# it). The snippet itself carries the "source this LAST" note.
+print_tmux_snippet() {
+  info "skipped — the in-pane banner needs this in your tmux config (add it last):"
+  printf '\n'
+  cat "$SQUAWK_ROOT/share/tmux/squawk.tmux"
+  printf '\n'
+}
+
 remove_tmux_snippet() {
   [ -f "$TMUX_CONF" ] || return 0
   grep -qF "$MARK_BEGIN" "$TMUX_CONF" 2>/dev/null || return 0
@@ -183,7 +192,7 @@ squawk_install() {
     read -r ans || ans=""
     case "$ans" in
       [yY]*) install_tmux_snippet ;;
-      *) info "skipped tmux snippet (add share/tmux/squawk.tmux to your tmux config manually)" ;;
+      *) print_tmux_snippet ;;
     esac
   fi
   info "done — restart Claude Code so it picks up the new hooks."

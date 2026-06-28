@@ -35,9 +35,7 @@ https://github.com/user-attachments/assets/a06acd74-dd22-4a0c-9f35-bc0d9dba9de6
 
 ## Events
 
-squawk hooks four Claude Code events. Each runs through the same visibility
-decision — stay quiet when you're looking at the pane, an in-pane banner when
-it's visible but not focused, a notification when it's off-screen:
+`squawk` uses Claude Code hooks to notify on the following events:
 
 | Event               | Fires when                                                  | Notification                                      |
 | ------------------- | ----------------------------------------------------------- | ------------------------------------------------- |
@@ -72,24 +70,10 @@ Keep the clone where it is — `squawk install` symlinks to it and reads its
 2. Symlinks `squawk` into `~/.local/bin` (override with `PREFIX=`).
 3. Merges its hooks (`Stop`, `StopFailure`, `Notification`, `PermissionRequest`)
    into `~/.claude/settings.json` — **idempotent** and **symlink-safe**.
-4. Offers to append the tmux prerequisite snippet to `~/.tmux.conf`.
+4. Offers to add the tmux snippet the in-pane banner needs to `~/.tmux.conf`
+   (or prints it for you to add yourself).
 
 > **Restart Claude Code** after installing so it loads the new hooks.
-
-### tmux prerequisite
-
-The banner swaps a pane's `pane-border-format`, which needs the border status
-line reserved and focus events on:
-
-```tmux
-set -g focus-events on
-set -g pane-border-status top
-set -g pane-border-format ''
-```
-
-`squawk install` can add this for you. If you prefer to do this manually, make
-sure to place it last in your tmux config — some themes turn
-`pane-border-status` off, so squawk has to load after them to win.
 
 ## Configuration
 

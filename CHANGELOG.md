@@ -57,7 +57,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   "Jump" action instead of alerter's default "Show"; a body click also jumps. All
   results parsed via JSON.
 - `squawk install` / `uninstall` / `check-deps` subcommands, with a symlink-safe,
-  idempotent settings.json merge.
+  idempotent settings.json merge. Install offers to add the in-pane banner's tmux
+  prerequisite to `~/.tmux.conf`, or prints it for you to add manually.
 - bats test suite, shellcheck + shfmt, GitHub Actions CI.
 
 [Unreleased]: https://github.com/nov1n/squawk/compare/v0.1.0...HEAD
