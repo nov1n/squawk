@@ -6,7 +6,7 @@
 
 `squawk` is a tmux-aware notification layer for Claude Code on macOS: it works
 out whether you can see the pane Claude is in, and only interrupts when you
-can't — then lets you reply, approve, or jump.
+can't — then lets you reply, approve, or jump to the pane.
 
 ## Features
 
