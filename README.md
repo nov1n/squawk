@@ -1,7 +1,3 @@
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/49a1b6dc-b792-42fb-8121-a81c6aac30c4" alt="Logo" height=150>
-</p>
-
 https://github.com/user-attachments/assets/a06acd74-dd22-4a0c-9f35-bc0d9dba9de6
 
 # squawk
