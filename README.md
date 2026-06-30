@@ -50,6 +50,9 @@ https://github.com/user-attachments/assets/a06acd74-dd22-4a0c-9f35-bc0d9dba9de6
   [`alerter`](https://github.com/vjeantet/alerter))
 - **tmux**, **jq**
 - **Claude Code**
+- **Claude for Desktop** _(optional)_ — its app icon is borrowed for the
+  notifications; without it they fall back to a default icon (or set
+  `SQUAWK_ICON`).
 
 ```bash
 brew install jq tmux
