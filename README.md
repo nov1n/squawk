@@ -2,36 +2,27 @@
   <img src="https://github.com/user-attachments/assets/49a1b6dc-b792-42fb-8121-a81c6aac30c4" alt="Logo" height=150>
 </p>
 
+https://github.com/user-attachments/assets/a06acd74-dd22-4a0c-9f35-bc0d9dba9de6
+
 # squawk
 
-`squawk` is a tmux-aware notification layer for Claude Code on macOS: it works
-out whether you can see the pane Claude is in, and only interrupts when you
-can't — then lets you reply, approve, or jump to the pane.
+`squawk` brings smart macOS notifications to Claude Code. It only alerts you
+when Claude is out of sight, offering quick actions to reply, approve, or jump
+to the pane.
 
 ## Features
 
-- **Smart notifications** — silent when a pane is focused, an in-pane banner
-  when it's visible but not focused, and a macOS notification only when it's
-  off-screen.
-- **Reply from the notification** — Reply from the notification and Claude
-  continues the conversation; no trip back to the terminal.
-- **Approve from the notification** — one-click _allow_ a permission prompt.
-- **Message preview** — Notifications show Claude's last message when relevant.
-- **Persistent + self-clearing** — notifications stay until you deal with them,
-  and clear automatically the moment you return to the pane.
-- **Per-session grouping** — a session's notifications replace each other
-  instead of stacking up.
-- **Zero-config** — works out of the box; configurable via env vars if you want
-  (see [Configuration](#configuration)).
-
-## Demo
-
-<details>
-<summary>Watch the demo</summary>
-
-https://github.com/user-attachments/assets/a06acd74-dd22-4a0c-9f35-bc0d9dba9de6
-
-</details>
+- **Context-Aware Alerts:** Silent when focused, in-pane banners when visible,
+  and notifications when off-screen.
+- **Inline Replies:** Reply from the notification to keep Claude going.
+- **One-Click Approvals:** Allow permission prompts straight from the alert.
+- **Message Previews:** See Claude's latest response at a glance.
+- **Smart Lifecycle:** Alerts persist until addressed, but auto-clear when you
+  focus the pane.
+- **Clean Grouping:** Session notifications update in place instead of
+  cluttering your screen.
+- **Zero-Config:** Works out of the box, with optional env var overrides (see
+  [Configuration](#configuration)).
 
 ## Events
 
@@ -46,17 +37,15 @@ https://github.com/user-attachments/assets/a06acd74-dd22-4a0c-9f35-bc0d9dba9de6
 
 ## Requirements
 
-- **macOS** (uses `osascript` +
-  [`alerter`](https://github.com/vjeantet/alerter))
-- **tmux**, **jq**
-- **Claude Code**
-- **Claude for Desktop** _(optional)_ — its app icon is borrowed for the
-  notifications; without it they fall back to a default icon (or set
-  `SQUAWK_ICON`).
+- **Claude Code**, **`tmux`**, **`jq`**, and **`alerter`** (Core dependencies)
+- **Claude for Desktop** _(Optional)_ `squawk` borrows its app icon to make
+  notifications look native. Without it, you get a default fallback icon (or you
+  can manually set `SQUAWK_ICON`).
 
 ```bash
-brew install jq tmux
+brew install jq tmux claude
 brew install vjeantet/tap/alerter
+brew install --cask claude-code
 ```
 
 ## Install
@@ -66,13 +55,13 @@ git clone https://github.com/nov1n/squawk ~/.local/share/squawk
 ~/.local/share/squawk/bin/squawk install
 ```
 
-Keep the clone where it is — `squawk install` symlinks to it and reads it at
+Keep the clone where it is as `squawk install` symlinks to it and reads it at
 runtime (so `git pull` upgrades in place). `squawk install`:
 
 1. Checks if required dependencies are correctly installed.
 2. Symlinks `squawk` into `~/.local/bin` (override with `PREFIX=`).
 3. Merges its hooks (`Stop`, `StopFailure`, `Notification`, `PermissionRequest`)
-   into `~/.claude/settings.json` — **idempotent** and **symlink-safe**.
+   into `~/.claude/settings.json`.
 4. Offers to add the tmux snippet the in-pane banner needs to `~/.tmux.conf` (or
    prints it for you to add yourself).
 
@@ -94,10 +83,6 @@ sourced if present):
 | `SQUAWK_ENABLE`    | `1`                        | Set to `0` to disable squawk entirely.                                                                                                                                                                                         |
 | `SQUAWK_DEBUG`     | _(unset)_                  | Set to `1` to log decisions to `SQUAWK_DEBUG_LOG`.                                                                                                                                                                             |
 | `SQUAWK_DEBUG_LOG` | `$TMPDIR/squawk-debug.log` | Debug log path.                                                                                                                                                                                                                |
-
-> **Notification icon.** With Claude for Desktop installed, notifications carry
-> the Claude icon automatically (squawk passes its bundle id to `alerter`). If
-> notifications stop appearing, see [the FAQ](#faq-notifications).
 
 ## Uninstall
 
